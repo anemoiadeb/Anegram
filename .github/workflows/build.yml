@@ -26,12 +26,27 @@ jobs:
         env:
           SKIP_JDK_VERSION_CHECK: true
 
-      - name: Fix Gradle JVM args
-        run: |
-          sed -i 's/-XX:MaxPermSize=[0-9]*[mMgG]//' TMessagesProj/gradle.properties || true
-          sed -i 's/-XX:MaxPermSize=[0-9]*[mMgG]//' gradle.properties || true
-
       - name: Set API keys
         run: |
-          sed -i 's/APP_ID = 4/APP_ID = 2040/' TMessagesProj/src/main/java/org/telegram/messenger/BuildVars.java
-          sed -i 's/APP_HASH = "ae2c1d609867d2e5642ebfc8fb9a5e61"/APP_HASH = "b18441a1ff607e10a98989
+          python3 << 'PYEOF'
+          import re
+          path = 'TMessagesProj/src/main/java/org/telegram/messenger/BuildVars.java'
+          with open(path, 'r') as f:
+              content = f.read()
+          content = re.sub(r'APP_ID = \d+', 'APP_ID = 36028663', content)
+          content = re.sub(r'APP_HASH = "[^"]*"', 'APP_HASH = "fc1ec74196461cb76d73aae901a9241c"', content)
+          with open(path, 'w') as f:
+              f.write(content)
+          PYEOF
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Build APK
+        run: ./gradlew assembleAfatRelease
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Anegram-APK
+          path: TMessagesProj_App/build/outputs/apk/afat/release/*.apk
