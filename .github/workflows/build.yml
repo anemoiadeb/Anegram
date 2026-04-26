@@ -18,25 +18,20 @@ jobs:
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          java-version: '11'
+          java-version: '17'
           distribution: 'temurin'
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
+        env:
+          SKIP_JDK_VERSION_CHECK: true
+
+      - name: Fix Gradle JVM args
+        run: |
+          sed -i 's/-XX:MaxPermSize=[0-9]*[mMgG]//' TMessagesProj/gradle.properties || true
+          sed -i 's/-XX:MaxPermSize=[0-9]*[mMgG]//' gradle.properties || true
 
       - name: Set API keys
         run: |
           sed -i 's/APP_ID = 4/APP_ID = 2040/' TMessagesProj/src/main/java/org/telegram/messenger/BuildVars.java
-          sed -i 's/APP_HASH = "ae2c1d609867d2e5642ebfc8fb9a5e61"/APP_HASH = "b18441a1ff607e10a989891a5462e627"/' TMessagesProj/src/main/java/org/telegram/messenger/BuildVars.java
-
-      - name: Make gradlew executable
-        run: chmod +x ./gradlew
-
-      - name: Build APK
-        run: ./gradlew assembleAfatRelease
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: Anegram-APK
-          path: TMessagesProj_App/build/outputs/apk/afat/release/*.apk
+          sed -i 's/APP_HASH = "ae2c1d609867d2e5642ebfc8fb9a5e61"/APP_HASH = "b18441a1ff607e10a98989
