@@ -26,6 +26,10 @@ jobs:
         env:
           SKIP_JDK_VERSION_CHECK: true
 
+      - name: Fix gradle JVM args
+        run: |
+          find . -name "gradle.properties" | xargs -I{} sed -i 's/-XX:MaxPermSize=[^ ]*//g' {}
+
       - name: Set API keys
         run: |
           python3 << 'PYEOF'
